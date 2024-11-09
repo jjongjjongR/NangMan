@@ -3,6 +3,7 @@ const app = express();
 const session = require("express-session");
 const fs = require("fs");
 const cors = require("cors");
+const jsonwebtoken = require("jsonwebtoken");
 
 app.use(
   session({
@@ -51,24 +52,41 @@ const db = {
 
 const dbPool = require("mysql2").createPool(db);
 
-app.post("/api/signup", async (request, res) => {
+app.post("/api/signUp", async (request, res) => {
   try {
+    const existingUser = await req.db("checkUser", [
+      request.body.param[0].email,
+    ]);
+
+    if (existingUser.length > 0) {
+      return res.send({
+        message: "중복된 이메일입니다.",
+      });
+    }
+
     await req.db("signUp", request.body.param);
+
     if (request.body.param.length > 0) {
-      for (let key in request.body.param[0])
+      for (let key in request.body.param[0]) {
         request.session[key] = request.body.param[0][key];
-      res.send(request.body.param[0]);
+      }
+      res.send({
+        message: "회원가입이 성공적으로 완료되었습니다.",
+        token: "your_generated_token", // 예시로 토큰을 응답에 포함시킬 수 있습니다.
+      });
     } else {
       res.send({
-        error: "Please try again or contact system manager. ",
+        error: "Please try again or contact system manager.",
       });
     }
   } catch (err) {
+    console.error(err);
     res.send({
       error: "DB access error",
     });
   }
 });
+
 
 app.post("/api/login", async (request, res) => {
   try {
@@ -78,8 +96,11 @@ app.post("/api/login", async (request, res) => {
       request.body.where
     );
     if (request.body.param.length > 0) {
+      const token = jsonwebtoken.sign(request.body.where, "leekim1927");
       for (let key in request.body.param[0])
         request.session[key] = request.body.param[0][key];
+      request.session[0] = token;
+      console.log(result);
       res.send(result);
     }
   } catch (err) {
@@ -174,11 +195,14 @@ const req = {
       dbPool.query(sql[alias].query + where, param, (error, rows) => {
         if (error) {
           if (error.code != "ER_DUP_ENTRY") console.log(error);
-          reject({
-            error,
-          });
+          reject({});
         } else {
+          const token = jsonwebtoken.sign(where, "leekim1927");
+          if (rows[0]) {
+            rows[0] = { token: token };
+          }
           resolve(rows);
+          console.log(rows);
         }
       })
     );

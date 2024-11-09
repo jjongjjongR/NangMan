@@ -1,7 +1,10 @@
 import { useState } from "react";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 function Login() {
+  const nav = useNavigate()
+
   const [ID, setID] = useState("");
   const [PW, setPW] = useState("");
   const [error, setError] = useState("");
@@ -41,6 +44,14 @@ function Login() {
     setError(""); // 에러 메시지 초기화
   };
 
+  const toSignup = () => {
+    nav("/signup")
+};
+
+const toHome = () => {
+  nav("/")
+};
+
   return (
     <>
       <h1>Login</h1>
@@ -61,6 +72,8 @@ function Login() {
         <button type="submit">Login</button> {/* 버튼을 submit 타입으로 변경 */}
       </form>
       <button onClick={logout}>Logout</button>
+      <button onClick={toSignup}>Sign up</button>
+      <button onClick={toHome}>Home</button>
       {error && <p style={{ color: "red" }}>{error}</p>}
       {success && <p style={{ color: "green" }}>{success}</p>}
     </>

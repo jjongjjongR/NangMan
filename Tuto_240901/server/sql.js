@@ -41,9 +41,12 @@ module.exports = {
     query: `select * from t_seller`,
   },
   signUp: {
-    query: `insert into t_user set ? on duplicate key update id=id`,
+    query: `insert into t_user set ?`,
   },
   logIn: {
     query: `select ? from t_user where `,
   },
+  checkUser: {
+    query: `select * from t_user where email = ?`,
+  }
 };

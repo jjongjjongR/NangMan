@@ -7,9 +7,14 @@ export default function Home() {
         nav("/login")
     };
 
+    const toMypage = () => {
+        nav("/mypage")
+    };
+    
     return (
         <div>
             <button onClick={toLogin}>Login</button>
+            <button onClick={toMypage}>Mypage</button>
         </div>
     );
 }
